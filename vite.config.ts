@@ -21,5 +21,5 @@ export default defineConfig({
       ],
     }),
   ],
-  base: "https://github.com/vntion/chicken-part-detection",
+  base: "/chicken-part-detection/",
 });
