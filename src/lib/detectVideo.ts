@@ -57,15 +57,9 @@ const detectVideo = async (
     );
 
     // 4. Render
-    // PENTING: Bersihkan canvas agar transparan sebelum menggambar kotak baru
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
 
-    // HAPUS baris ini: ctx.drawImage(video, ...);
-    // Kita ingin melihat video player asli di belakang, bukan gambar di canvas.
-
-    // Gambar kotak dan hitungan
     renderBoxes(ctx, boxes, isCounting);
-
     requestAnimationFrame(detectionLoop);
   };
 

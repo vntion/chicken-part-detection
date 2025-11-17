@@ -55,7 +55,7 @@ const detectImage = async (
     yScale,
   );
 
-  // 4. Render Hasil
+  // 4. Render
   renderBoxes(ctx, boxes);
 };
 

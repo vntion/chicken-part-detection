@@ -1,8 +1,8 @@
 import { UploadCloud } from "lucide-react";
 import type { InferenceSession } from "onnxruntime-web";
-import { useEffect, useRef, useState } from "react";
-import videojs from "video.js";
+import { useRef, useState } from "react";
 import type Player from "video.js/dist/types/player";
+import useInitVideo from "../hooks/useInitVideo";
 import detectVideo from "../lib/detectVideo";
 
 type Props = {
@@ -14,11 +14,10 @@ function VideoDetection({ session }: Props) {
   const [enableCounting, setEnableCounting] = useState(false);
   const [isReadyToPlay, setIsReadyToPlay] = useState(false);
 
-  // Ref
   const videoNode = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const playerRef = useRef<Player | null>(null);
-  const videoURLRef = useRef<string | null>(null); // Tambahkan ref untuk URL
+  const videoURLRef = useRef<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -26,65 +25,6 @@ function VideoDetection({ session }: Props) {
       setIsReadyToPlay(false);
     }
   };
-
-  // Inisialisasi Video.js saat file siap
-  useEffect(() => {
-    if (!videoNode.current || !file) return;
-
-    const videoElement = videoNode.current;
-
-    // Bersihkan URL lama sebelum membuat yang baru
-    if (videoURLRef.current) {
-      URL.revokeObjectURL(videoURLRef.current);
-    }
-
-    const videoURL = URL.createObjectURL(file);
-    videoURLRef.current = videoURL;
-
-    // Hapus player sebelumnya jika ada
-    if (playerRef.current) {
-      playerRef.current.dispose();
-      playerRef.current = null;
-    }
-
-    // Tunggu sebentar sebelum inisialisasi player baru
-    // untuk memastikan DOM sudah bersih
-    const timeoutId = setTimeout(() => {
-      // Buat player baru
-      const newPlayer = videojs(videoElement, {
-        controls: true,
-        preload: "auto",
-        responsive: true,
-        fluid: true,
-        sources: [{ src: videoURL, type: file.type }],
-      });
-
-      playerRef.current = newPlayer;
-
-      newPlayer.on("loadedmetadata", () => {
-        setIsReadyToPlay(true);
-      });
-
-      // Load video secara eksplisit
-      newPlayer.load();
-    }, 100);
-
-    return () => {
-      clearTimeout(timeoutId);
-
-      // Cleanup player
-      if (playerRef.current) {
-        playerRef.current.dispose();
-        playerRef.current = null;
-      }
-
-      // Cleanup URL object
-      if (videoURLRef.current) {
-        URL.revokeObjectURL(videoURLRef.current);
-        videoURLRef.current = null;
-      }
-    };
-  }, [file]);
 
   const handleSubmit = () => {
     if (!playerRef.current || !canvasRef.current || !session) {
@@ -104,6 +44,15 @@ function VideoDetection({ session }: Props) {
 
     detectVideo(videoElement, canvasRef, session, enableCounting);
   };
+
+  // Inisialisasi Video.js saat file siap
+  useInitVideo({
+    file,
+    videoNode,
+    videoURLRef,
+    playerRef,
+    onReadyToPlay: setIsReadyToPlay,
+  });
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">

@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { InferenceSession, env } from "onnxruntime-web";
+import { useRef, useState } from "react";
 import Container from "./components/Container";
 import ImageDetection from "./components/ImageDetection";
+import LoadingModal from "./components/LoadingModal";
 import Main from "./components/Main";
 import Sidebar from "./components/Sidebar";
 import VideoDetection from "./components/VideoDetection";
 import { useMode } from "./context/ModeContext";
-import { InferenceSession, env } from "onnxruntime-web";
-import LoadingModal from "./components/LoadingModal";
-import modelUrl from "./assets/yolo11n-nms.onnx?url";
+import useLoadModel from "./hooks/useLoadModel";
 
 env.wasm.wasmPaths = import.meta.env.BASE_URL;
 
@@ -16,22 +16,7 @@ function App() {
   const sessionRef = useRef<InferenceSession>(null);
   const { mode } = useMode();
 
-  useEffect(() => {
-    const loadModel = async () => {
-      try {
-        setIsLoadingModel(true);
-        console.log("Mencoba load model dari:", modelUrl);
-        const nms = await InferenceSession.create(modelUrl);
-        sessionRef.current = nms;
-      } catch (e) {
-        alert(e);
-      } finally {
-        setIsLoadingModel(false);
-      }
-    };
-
-    loadModel();
-  }, []);
+  useLoadModel(sessionRef, setIsLoadingModel);
 
   return (
     <Container>
