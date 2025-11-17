@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Pure Tailwind</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="//unpkg.com/alpinejs" defer></script>
+  </head>
+  <body class="bg-gray-100">
+    <div
+      x-data="{ mode: 'image', isLoading: false, imageOption: 'enhance', enableCounting: false }"
+      class="flex min-h-screen"
+    >
+      <aside class="w-64 bg-gray-900 text-white p-6 shadow-xl flex flex-col">
+        <h1 class="text-2xl font-bold flex items-center gap-2 mb-10">
+          <i data-lucide="scan-eye"></i>
+          <span>VisionSys</span>
+        </h1>
+        <nav class="flex flex-col space-y-2">
+          <button
+            @click="mode = 'image'; isLoading = false"
+            :class="mode === 'image' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-700 hover:text-white'"
+            class="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all"
+          >
+            <i data-lucide="image"></i>
+            <span>Deteksi Gambar</span>
+          </button>
+          <button
+            @click="mode = 'video'; isLoading = false; enableCounting = false"
+            :class="mode === 'video' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-700 hover:text-white'"
+            class="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all"
+          >
+            <i data-lucide="video"></i>
+            <span>Deteksi Video</span>
+          </button>
+        </nav>
+      </aside>
+
+      <main class="flex-1 p-10 overflow-auto">
+        <div
+          x-show="mode === 'image'"
+          x-transition
+          class="max-w-3xl mx-auto space-y-6"
+        >
+          <h2 class="text-4xl font-bold text-gray-800">Deteksi Gambar</h2>
+          <p class="text-gray-600">
+            Unggah gambar untuk ditingkatkan (enhance) atau deteksi wilayah
+            objek (region).
+          </p>
+
+          <div
+            class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center bg-white cursor-pointer hover:border-blue-500 transition-colors"
+          >
+            <i
+              data-lucide="upload-cloud"
+              class="mx-auto h-12 w-12 text-gray-400"
+            ></i>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">
+              Seret & Lepas file gambar
+            </h3>
+            <p class="mt-1 text-xs text-gray-500">PNG, JPG, WEBP hingga 10MB</p>
+          </div>
+
+          <h3 class="text-xl font-semibold text-gray-700 pt-4">Opsi Deteksi</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label
+              @click="imageOption = 'enhance'"
+              class="flex items-start p-4 border rounded-lg cursor-pointer transition-all"
+              :class="imageOption === 'enhance' ? 'border-blue-600 bg-blue-50 shadow-md' : 'border-gray-200 bg-white'"
+            >
+              <i
+                data-lucide="wand-2"
+                class="w-5 h-5 mr-3 text-blue-600 flex-shrink-0 mt-1"
+              ></i>
+              <div>
+                <span class="font-bold text-gray-800">Image Enhancement</span>
+                <p class="text-sm text-gray-500">
+                  Meningkatkan kualitas gambar.
+                </p>
+              </div>
+              <input
+                type="radio"
+                name="image_option"
+                value="enhance"
+                class="sr-only"
+                x-model="imageOption"
+              />
+            </label>
+
+            <label
+              @click="imageOption = 'region'"
+              class="flex items-start p-4 border rounded-lg cursor-pointer transition-all"
+              :class="imageOption === 'region' ? 'border-blue-600 bg-blue-50 shadow-md' : 'border-gray-200 bg-white'"
+            >
+              <i
+                data-lucide="scan-search"
+                class="w-5 h-5 mr-3 text-blue-600 flex-shrink-0 mt-1"
+              ></i>
+              <div>
+                <span class="font-bold text-gray-800">Object Region</span>
+                <p class="text-sm text-gray-500">Mendeteksi lokasi objek.</p>
+              </div>
+              <input
+                type="radio"
+                name="image_option"
+                value="region"
+                class="sr-only"
+                x-model="imageOption"
+              />
+            </label>
+          </div>
+
+          <button
+            @click="isLoading = true; setTimeout(() => isLoading = false, 3000)"
+            class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors text-lg"
+          >
+            <i
+              x-show="isLoading"
+              data-lucide="loader-2"
+              class="w-6 h-6 mr-2 animate-spin"
+            ></i>
+            <span x-show="!isLoading">Mulai Deteksi Gambar</span>
+            <span x-show="isLoading">Mendeteksi...</span>
+          </button>
+        </div>
+
+        <div
+          x-show="mode === 'video'"
+          x-transition
+          class="max-w-3xl mx-auto space-y-6"
+        >
+          <h2 class="text-4xl font-bold text-gray-800">Deteksi Video</h2>
+          <p class="text-gray-600">
+            Unggah video untuk deteksi standar, atau aktifkan counting opsional.
+          </p>
+
+          <div
+            class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center bg-white cursor-pointer hover:border-green-500 transition-colors"
+          >
+            <i
+              data-lucide="upload-cloud"
+              class="mx-auto h-12 w-12 text-gray-400"
+            ></i>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">
+              Seret & Lepas file video
+            </h3>
+            <p class="mt-1 text-xs text-gray-500">MP4, AVI, MOV hingga 50MB</p>
+          </div>
+
+          <h3 class="text-xl font-semibold text-gray-700 pt-4">
+            Opsi Tambahan (Opsional)
+          </h3>
+          <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+            <label
+              for="counting-checkbox-v1"
+              class="flex items-center cursor-pointer"
+            >
+              <input
+                id="counting-checkbox-v1"
+                type="checkbox"
+                x-model="enableCounting"
+                class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
+              />
+              <div class="ml-3">
+                <span class="font-bold text-gray-800"
+                  >Aktifkan Object Counting</span
+                >
+                <p class="text-sm text-gray-500">
+                  Tandai untuk menghitung objek.
+                </p>
+              </div>
+            </label>
+          </div>
+
+          <button
+            @click="isLoading = true; setTimeout(() => isLoading = false, 3000)"
+            class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center hover:bg-green-700 transition-colors text-lg"
+          >
+            <i
+              x-show="isLoading"
+              data-lucide="loader-2"
+              class="w-6 h-6 mr-2 animate-spin"
+            ></i>
+            <span x-show="!isLoading">Mulai Deteksi Video</span>
+            <span x-show="isLoading">Memproses...</span>
+          </button>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>
