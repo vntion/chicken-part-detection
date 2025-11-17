@@ -91,3 +91,5 @@ export const LABELS = [
   "hair drier",
   "toothbrush",
 ];
+
+export const SCORE_THRESHOLD = 0.25; // 25%

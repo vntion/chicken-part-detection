@@ -9,7 +9,7 @@ import { InferenceSession, env } from "onnxruntime-web";
 import LoadingModal from "./components/LoadingModal";
 import modelUrl from "./assets/yolo11n-nms.onnx?url";
 
-env.wasm.wasmPaths = "/";
+env.wasm.wasmPaths = import.meta.env.BASE_URL;
 
 function App() {
   const [isLoadingModel, setIsLoadingModel] = useState(false);
