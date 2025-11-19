@@ -55,7 +55,7 @@ function VideoDetection({ session }: Props) {
   });
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <>
       <h2 className="text-4xl font-bold text-gray-800">Deteksi Video</h2>
 
       <p className="text-gray-600">
@@ -163,7 +163,7 @@ function VideoDetection({ session }: Props) {
           {isReadyToPlay ? "Mulai deteksi video" : "Memuat Player..."}
         </button>
       </form>
-    </div>
+    </>
   );
 }
 

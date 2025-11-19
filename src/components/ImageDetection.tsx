@@ -65,7 +65,7 @@ function ImageDetection({ session }: Props) {
   };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <>
       <h2 className="text-4xl font-bold text-gray-800">Deteksi Gambar</h2>
       <p className="text-gray-600">
         Unggah gambar untuk ditingkatkan (enhance) atau deteksi wilayah objek
@@ -75,8 +75,6 @@ function ImageDetection({ session }: Props) {
       <form>
         {file ? (
           <div className="">
-            {/* --- KONDISIONAL RENDERING DITAMBAHKAN --- */}
-            {/* Tampilkan gambar asli HANYA JIKA deteksi BELUM selesai */}
             {!isDetected && (
               <img
                 src={imageURL}
@@ -84,7 +82,6 @@ function ImageDetection({ session }: Props) {
                 className="h-auto max-h-210 w-full object-contain"
               />
             )}
-            {/* Tampilkan kanvas JIKA deteksi SUDAH selesai */}
             <canvas
               ref={canvasImage}
               className={
@@ -93,7 +90,6 @@ function ImageDetection({ session }: Props) {
                   : "hidden"
               }
             />
-            {/* --- AKHIR KONDISIONAL --- */}
 
             <h3 className="mt-2 text-sm font-medium text-gray-900">
               File terpilih: {file.name}
@@ -143,13 +139,11 @@ function ImageDetection({ session }: Props) {
         <button
           type="button"
           onClick={handleSubmit}
-          // Tombol dinonaktifkan saat loading atau jika tidak ada file
-          disabled={isLoading || !file} // DIPERBARUI
+          disabled={isLoading || !file}
           className={
             "mt-4 flex w-full cursor-pointer items-center justify-center rounded-lg bg-blue-600 px-4 py-3 text-lg font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           }
         >
-          {/* Conditional rendering untuk ikon loading dan teks */}
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-6 w-6 animate-spin" />
@@ -160,7 +154,7 @@ function ImageDetection({ session }: Props) {
           )}
         </button>
       </form>
-    </div>
+    </>
   );
 }
 

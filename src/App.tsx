@@ -21,8 +21,8 @@ function App() {
   return (
     <Container>
       <Sidebar />
+      {isLoadingModel && <LoadingModal />}
       <Main>
-        {isLoadingModel && <LoadingModal />}
         {mode === "image" && <ImageDetection session={sessionRef.current} />}
         {mode === "video" && <VideoDetection session={sessionRef.current} />}
       </Main>
