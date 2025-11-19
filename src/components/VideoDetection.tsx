@@ -105,13 +105,13 @@ function VideoDetection({ session }: Props) {
         ) : (
           <>
             <label
-              className="block cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-white p-12 text-center transition-colors hover:border-green-500"
+              className="relative block cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-white p-12 text-center transition-colors hover:border-green-500"
               htmlFor="input_file"
             >
               <input
                 type="file"
                 onChange={handleFileChange}
-                className="hidden"
+                className="absolute inset-0 cursor-pointer opacity-0"
                 accept="video/mp4, video/avi, video/quicktime, .mov"
                 id="input_file"
               />

@@ -1,8 +1,7 @@
-import { Loader2, UploadCloud } from "lucide-react";
+import { Loader2, ScanSearch, UploadCloud, Wand2 } from "lucide-react";
 import type { InferenceSession } from "onnxruntime-web";
 import { useRef, useState, type ChangeEvent } from "react";
 import detectImage from "../lib/detectImage";
-// import Result from "./Result"; // Tidak digunakan di sini, bisa dihapus jika mau
 
 type Props = {
   session: InferenceSession | null;
@@ -12,6 +11,9 @@ function ImageDetection({ session }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isDetected, setIsDetected] = useState(false);
+  const [imageOption, setImageOption] = useState<"enhance" | "region" | null>(
+    null,
+  );
 
   const canvasImage = useRef<HTMLCanvasElement>(null);
 
@@ -36,26 +38,18 @@ function ImageDetection({ session }: Props) {
       return;
     }
 
-    // Mulai loading
-    setIsLoading(true); // DITAMBAHKAN KEMBALI
-    // Pastikan kanvas tersembunyi & gambar asli terlihat
-    setIsDetected(false); // DITAMBAHKAN KEMBALI
+    setIsLoading(true);
+    setIsDetected(false);
 
     const image = new Image();
     image.src = imageURL;
 
     image.onload = async () => {
       try {
-        // Panggil fungsi detectImage yang sudah diperbarui dengan parameter
-        await detectImage(
-          image,
-          canvasImage, // Hapus 'as RefObject<...>'
-          session,
-        );
+        await detectImage(image, canvasImage, session);
 
-        // Jika berhasil, set state untuk menampilkan kanvas
-        setIsDetected(true); // DITAMBAHKAN KEMBALI
-        console.log("Deteksi selesai, kanvas digambar."); // Diubah dari console.log(image)
+        setIsDetected(true);
+        console.log("Deteksi selesai, kanvas digambar.");
       } catch (e) {
         alert(`Terjadi kesalahan saat deteksi: ${e}`);
       } finally {
@@ -82,6 +76,7 @@ function ImageDetection({ session }: Props) {
                 className="h-auto max-h-210 w-full object-contain"
               />
             )}
+
             <canvas
               ref={canvasImage}
               className={
@@ -135,11 +130,64 @@ function ImageDetection({ session }: Props) {
           </label>
         )}
 
+        <h3 className="mb-2 pt-4 text-xl font-semibold text-gray-700">
+          Option
+        </h3>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {/* Opsi 1: Image Enhancement */}
+          <label
+            className={`flex cursor-pointer items-start rounded-lg border p-4 transition-all ${
+              imageOption === "enhance"
+                ? "border-blue-600 bg-blue-50 shadow-md"
+                : "border-gray-200 bg-white"
+            }`}
+          >
+            <Wand2 className="mt-1 mr-3 h-5 w-5 shrink-0 text-blue-600" />
+            <div>
+              <span className="font-bold text-gray-800">Image Enhancement</span>
+              <p className="text-sm text-gray-500">
+                Meningkatkan kualitas gambar.
+              </p>
+            </div>
+            <input
+              type="radio"
+              name="image_option"
+              value="enhance"
+              className="sr-only"
+              checked={imageOption === "enhance"}
+              onChange={() => setImageOption("enhance")}
+            />
+          </label>
+
+          {/* Opsi 2: Object Region */}
+          <label
+            className={`flex cursor-pointer items-start rounded-lg border p-4 transition-all ${
+              imageOption === "region"
+                ? "border-blue-600 bg-blue-50 shadow-md"
+                : "border-gray-200 bg-white"
+            }`}
+          >
+            <ScanSearch className="mt-1 mr-3 h-5 w-5 shrink-0 text-blue-600" />
+            <div>
+              <span className="font-bold text-gray-800">Object Region</span>
+              <p className="text-sm text-gray-500">Mendeteksi lokasi objek.</p>
+            </div>
+            <input
+              type="radio"
+              name="image_option"
+              value="region"
+              className="sr-only"
+              checked={imageOption === "region"}
+              onChange={() => setImageOption("region")}
+            />
+          </label>
+        </div>
+
         {/* Tombol Submit */}
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={isLoading || !file}
+          disabled={isLoading || !file || !imageOption}
           className={
             "mt-4 flex w-full cursor-pointer items-center justify-center rounded-lg bg-blue-600 px-4 py-3 text-lg font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           }
