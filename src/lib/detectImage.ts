@@ -1,5 +1,4 @@
 import { InferenceSession, Tensor } from "onnxruntime-web";
-import type { RefObject } from "react";
 import { INPUT_SHAPE, MODEL_HEIGTH, MODEL_WIDTH } from "./constants";
 import createBoundingBoxes from "./createBoundingBoxes";
 import prepareInput from "./prepareInput";
@@ -7,10 +6,9 @@ import renderBoxes from "./renderBoxes";
 
 const detectImage = async (
   image: HTMLImageElement,
-  canvasRef: RefObject<HTMLCanvasElement | null>,
+  canvas: HTMLCanvasElement | null,
   session: InferenceSession,
 ): Promise<void> => {
-  const canvas = canvasRef.current;
   if (!canvas) {
     console.error("Elemen kanvas tidak ditemukan.");
     return;

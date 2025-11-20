@@ -1,8 +1,9 @@
 import { Loader2, ScanSearch, UploadCloud, Wand2 } from "lucide-react";
 import type { InferenceSession } from "onnxruntime-web";
-import { useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import detectImage from "../lib/detectImage";
 import generateEnhancedImages from "../lib/generateEnhancedImages";
+import type { EnhancedImageResult } from "../types/EnhancedImageResult";
 
 type Props = {
   session: InferenceSession | null;
@@ -15,13 +16,18 @@ function ImageDetection({ session }: Props) {
   const [imageOption, setImageOption] = useState<"enhance" | "region" | null>(
     null,
   );
+  const [enhancedResults, setEnhancedResults] = useState<EnhancedImageResult[]>(
+    [],
+  );
 
-  const canvasImage = useRef<HTMLCanvasElement>(null);
+  const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
       setIsDetected(false);
+      setEnhancedResults([]);
+      canvasRefs.current = [];
     }
   };
 
@@ -32,33 +38,69 @@ function ImageDetection({ session }: Props) {
       alert("Silakan unggah gambar terlebih dahulu.");
       return;
     }
-
     if (!session) {
       alert("Model belum dimuat");
+      return;
+    }
+    if (!imageOption) {
+      alert("Pilih opsi terlebih dahulu (Enhancement atau Region).");
       return;
     }
 
     setIsLoading(true);
     setIsDetected(false);
+    setEnhancedResults([]);
 
-    const image = new Image();
-    image.src = imageURL;
+    try {
+      const image = new Image();
+      image.src = imageURL;
 
-    image.onload = async () => {
-      try {
-        const enhance = await generateEnhancedImages(image);
-        console.log(enhance);
-        await detectImage(image, canvasImage, session);
+      image.onload = async () => {
+        if (imageOption === "region") {
+          await detectImage(image, canvasRefs.current[0], session);
+          setIsDetected(true);
+        } else if (imageOption === "enhance") {
+          const results = await generateEnhancedImages(image);
+          setEnhancedResults(results);
+        }
+      };
+    } catch (e) {
+      alert(`Error: ${e}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        setIsDetected(true);
-        console.log("Deteksi selesai, kanvas digambar.");
-      } catch (e) {
-        alert(`Terjadi kesalahan saat deteksi: ${e}`);
-      } finally {
-        setIsLoading(false);
+  useEffect(() => {
+    const runMultiDetection = async () => {
+      if (imageOption === "enhance" && enhancedResults.length > 0 && session) {
+        try {
+          for (let i = 0; i < enhancedResults.length; i++) {
+            const item = enhancedResults[i];
+            const canvasEl = canvasRefs.current[i];
+
+            if (canvasEl) {
+              const img = new Image();
+              img.src = item.url;
+              await new Promise((resolve) => {
+                img.onload = async () => {
+                  await detectImage(img, canvasEl, session);
+                  resolve(true);
+                };
+              });
+            }
+          }
+          setIsDetected(true);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setIsLoading(false);
+        }
       }
     };
-  };
+
+    runMultiDetection();
+  }, [enhancedResults, session, imageOption]);
 
   return (
     <>
@@ -70,47 +112,75 @@ function ImageDetection({ session }: Props) {
 
       <form>
         {file ? (
-          <div className="">
-            {!isDetected && (
+          <div className="mt-4">
+            {/* TAMPILAN 1: Mode Preview Awal / Mode Region */}
+            {!isDetected && enhancedResults.length === 0 && (
               <img
                 src={imageURL}
                 alt={file.name}
-                className="h-auto max-h-210 w-full object-contain"
+                className="mx-auto h-auto max-h-[300px] w-full object-contain"
               />
             )}
 
-            <canvas
-              ref={canvasImage}
-              className={
-                isDetected
-                  ? "block h-auto max-h-200 w-full object-contain"
-                  : "hidden"
-              }
-            />
-
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              File terpilih: {file.name}
-            </h3>
-            <p className="mt-1 text-xs text-gray-500">
-              Ukuran: {(file.size / 1024 / 1024).toFixed(2)} MB
-            </p>
-            <label
-              htmlFor="input_file"
-              className="mt-4 inline-block w-full cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 text-center text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
-            >
-              <input
-                type="file"
-                onChange={handleFileChange}
-                className="hidden"
-                id="input_file"
-                accept="image/png, image/jpeg, image/webp"
+            {/* TAMPILAN 2: Hasil Mode Region (Single Canvas) */}
+            {imageOption === "region" && (
+              <canvas
+                ref={(el) => {
+                  canvasRefs.current[0] = el;
+                }}
+                className={
+                  isDetected
+                    ? "mx-auto block h-auto max-h-[400px] w-full object-contain"
+                    : "hidden"
+                }
               />
-              Ganti gambar
-            </label>
+            )}
+
+            {/* TAMPILAN 3: Hasil Mode Enhance (Multi Canvas) - PERBAIKAN MAP DI SINI */}
+            {imageOption === "enhance" && enhancedResults.length > 0 && (
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                {enhancedResults.map((item, index) => (
+                  <div key={index} className="rounded border bg-gray-50 p-2">
+                    <p className="mb-1 text-center text-sm font-semibold">
+                      {item.type}
+                    </p>
+                    <canvas
+                      ref={(el) => {
+                        canvasRefs.current[index] = el;
+                      }}
+                      className="block h-auto w-full object-contain"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-4 text-center">
+              <h3 className="text-sm font-medium text-gray-900">
+                File: {file.name}
+              </h3>
+              <p className="text-xs text-gray-500">
+                Ukuran: {(file.size / 1024 / 1024).toFixed(2)} MB
+              </p>
+
+              <label
+                htmlFor="input_file"
+                className="mt-2 inline-block cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="input_file"
+                  accept="image/png, image/jpeg, image/webp"
+                />
+                Ganti Gambar
+              </label>
+            </div>
           </div>
         ) : (
           <label
-            className="relative block cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-white p-12 text-center transition-colors hover:border-blue-500"
+            className="relative mt-6 block cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-white p-12 text-center hover:border-blue-500"
             htmlFor="input_file"
           >
             <input
@@ -120,20 +190,18 @@ function ImageDetection({ session }: Props) {
               id="input_file"
               accept="image/png, image/jpeg, image/webp"
             />
-            <>
-              <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">
-                Seret & Lepas atau Klik untuk mengunggah
-              </h3>
-              <p className="mt-1 text-xs text-gray-500">
-                PNG, JPG, WEBP hingga 10MB
-              </p>
-            </>
+            <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
+              Seret & Lepas atau Klik
+            </h3>
+            <p className="mt-1 text-xs text-gray-500">
+              PNG, JPG, WEBP hingga 10MB
+            </p>
           </label>
         )}
 
-        <h3 className="mb-2 pt-4 text-xl font-semibold text-gray-700">
-          Option
+        <h3 className="mb-2 pt-6 text-xl font-semibold text-gray-700">
+          Opsi Pemrosesan
         </h3>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* Opsi 1: Image Enhancement */}
@@ -148,7 +216,7 @@ function ImageDetection({ session }: Props) {
             <div>
               <span className="font-bold text-gray-800">Image Enhancement</span>
               <p className="text-sm text-gray-500">
-                Meningkatkan kualitas gambar.
+                Tampilkan 4 variasi gambar + deteksi.
               </p>
             </div>
             <input
@@ -157,7 +225,11 @@ function ImageDetection({ session }: Props) {
               value="enhance"
               className="sr-only"
               checked={imageOption === "enhance"}
-              onChange={() => setImageOption("enhance")}
+              onChange={() => {
+                setImageOption("enhance");
+                setIsDetected(false);
+                setEnhancedResults([]);
+              }}
             />
           </label>
 
@@ -172,7 +244,9 @@ function ImageDetection({ session }: Props) {
             <ScanSearch className="mt-1 mr-3 h-5 w-5 shrink-0 text-blue-600" />
             <div>
               <span className="font-bold text-gray-800">Object Region</span>
-              <p className="text-sm text-gray-500">Mendeteksi lokasi objek.</p>
+              <p className="text-sm text-gray-500">
+                Deteksi langsung (Single View).
+              </p>
             </div>
             <input
               type="radio"
@@ -180,27 +254,28 @@ function ImageDetection({ session }: Props) {
               value="region"
               className="sr-only"
               checked={imageOption === "region"}
-              onChange={() => setImageOption("region")}
+              onChange={() => {
+                setImageOption("region");
+                setIsDetected(false);
+                setEnhancedResults([]);
+              }}
             />
           </label>
         </div>
 
-        {/* Tombol Submit */}
         <button
           type="button"
           onClick={handleSubmit}
           disabled={isLoading || !file || !imageOption}
-          className={
-            "mt-4 flex w-full cursor-pointer items-center justify-center rounded-lg bg-blue-600 px-4 py-3 text-lg font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-          }
+          className="mt-6 flex w-full cursor-pointer items-center justify-center rounded-lg bg-blue-600 px-4 py-3 text-lg font-bold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-              <span>Mendeteksi...</span>
+              <span>Memproses...</span>
             </>
           ) : (
-            <span>Mulai Deteksi Gambar</span>
+            <span>Mulai Deteksi</span>
           )}
         </button>
       </form>
