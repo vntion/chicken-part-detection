@@ -2,6 +2,7 @@ import { Loader2, ScanSearch, UploadCloud, Wand2 } from "lucide-react";
 import type { InferenceSession } from "onnxruntime-web";
 import { useRef, useState, type ChangeEvent } from "react";
 import detectImage from "../lib/detectImage";
+import generateEnhancedImages from "../lib/generateEnhancedImages";
 
 type Props = {
   session: InferenceSession | null;
@@ -20,7 +21,6 @@ function ImageDetection({ session }: Props) {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
-
       setIsDetected(false);
     }
   };
@@ -46,6 +46,8 @@ function ImageDetection({ session }: Props) {
 
     image.onload = async () => {
       try {
+        const enhance = await generateEnhancedImages(image);
+        console.log(enhance);
         await detectImage(image, canvasImage, session);
 
         setIsDetected(true);
