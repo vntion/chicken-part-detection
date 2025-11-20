@@ -113,7 +113,6 @@ function ImageDetection({ session }: Props) {
       <form>
         {file ? (
           <div className="mt-4">
-            {/* TAMPILAN 1: Mode Preview Awal / Mode Region */}
             {!isDetected && enhancedResults.length === 0 && (
               <img
                 src={imageURL}
@@ -122,7 +121,6 @@ function ImageDetection({ session }: Props) {
               />
             )}
 
-            {/* TAMPILAN 2: Hasil Mode Region (Single Canvas) */}
             {imageOption === "region" && (
               <canvas
                 ref={(el) => {
@@ -136,7 +134,6 @@ function ImageDetection({ session }: Props) {
               />
             )}
 
-            {/* TAMPILAN 3: Hasil Mode Enhance (Multi Canvas) - PERBAIKAN MAP DI SINI */}
             {imageOption === "enhance" && enhancedResults.length > 0 && (
               <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
                 {enhancedResults.map((item, index) => (
@@ -204,7 +201,6 @@ function ImageDetection({ session }: Props) {
           Opsi Pemrosesan
         </h3>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {/* Opsi 1: Image Enhancement */}
           <label
             className={`flex cursor-pointer items-start rounded-lg border p-4 transition-all ${
               imageOption === "enhance"
@@ -233,7 +229,6 @@ function ImageDetection({ session }: Props) {
             />
           </label>
 
-          {/* Opsi 2: Object Region */}
           <label
             className={`flex cursor-pointer items-start rounded-lg border p-4 transition-all ${
               imageOption === "region"
