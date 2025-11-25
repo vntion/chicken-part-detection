@@ -5,7 +5,7 @@ import {
   type RefObject,
   type SetStateAction,
 } from "react";
-import modelUrl from "../assets/yolo11n-nms.onnx?url";
+import modelUrl from "../assets/chicken-640.onnx?url";
 
 const useLoadModel = (
   sessionRef: RefObject<InferenceSession | null>,

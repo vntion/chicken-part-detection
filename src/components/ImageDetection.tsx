@@ -239,9 +239,7 @@ function ImageDetection({ session }: Props) {
             <ScanSearch className="mt-1 mr-3 h-5 w-5 shrink-0 text-blue-600" />
             <div>
               <span className="font-bold text-gray-800">Object Region</span>
-              <p className="text-sm text-gray-500">
-                Deteksi langsung (Single View).
-              </p>
+              <p className="text-sm text-gray-500">Deteksi langsung.</p>
             </div>
             <input
               type="radio"

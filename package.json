@@ -19,6 +19,7 @@
     "onnxruntime-web": "^1.23.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-responsive": "^10.0.1",
     "tailwindcss": "^4.1.16"
   },
   "devDependencies": {
