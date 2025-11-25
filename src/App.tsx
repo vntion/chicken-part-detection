@@ -9,6 +9,7 @@ import VideoDetection from "./components/VideoDetection";
 import { useMode } from "./context/ModeContext";
 import useLoadModel from "./hooks/useLoadModel";
 import { useMediaQuery } from "react-responsive";
+import { useModel } from "./context/ModelContext";
 
 env.wasm.wasmPaths = import.meta.env.BASE_URL;
 
@@ -16,11 +17,17 @@ function App() {
   const [isLoadingModel, setIsLoadingModel] = useState(false);
   const sessionRef = useRef<InferenceSession>(null);
   const { mode } = useMode();
+  const { model, onChangeLoadedModel } = useModel();
 
-  const isMobile = useMediaQuery({ query: "(max-width: 650px)" });
-  const isLaptop = useMediaQuery({ query: "(min-width: 651px)" });
+  const isMobile = useMediaQuery({ query: "(max-width: 570px)" });
+  const isLaptop = useMediaQuery({ query: "(min-width: 571px)" });
 
-  useLoadModel(sessionRef, setIsLoadingModel);
+  useLoadModel({
+    sessionRef,
+    model,
+    onLoading: setIsLoadingModel,
+    onChangeLoadedModel,
+  });
 
   return (
     <>
